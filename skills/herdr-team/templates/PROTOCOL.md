@@ -8,8 +8,10 @@ This team works on `{{REPO}}`. The main branch is `{{MAIN_BRANCH}}`. The human t
 
 ## Who talks to whom
 
-- `{{LEAD}}` assigns every task and is the only agent that messages workers.
-- Workers message only `{{LEAD}}`.
+- `{{LEAD}}` assigns every task. No agent starts work without a TASK or a HANDOFF.
+- Inside a task, agents talk to each other directly. Send handoffs, questions, findings, and rework to the agent that needs them, not through `{{LEAD}}`.
+- `{{LEAD}}` gets only DONE, DECISION, BLOCKED, and NOTE. Do not send it progress updates or copies of messages between agents.
+- If two agents still disagree after two rounds, or a task goes back and forth more than three times, one of them sends DECISION to `{{LEAD}}` with both positions.
 - `{{LEAD}}` asks the human before pushing, releasing, deleting branches or data, or changing a goal's scope.
 
 ## Messages
@@ -22,28 +24,37 @@ herdr agent prompt <to> "<message>"
 
 Send without `--wait`, then carry on or end your turn. Replies arrive as your next prompt.
 
-- `TASK <id> | <goal> | inputs: <paths, branches> | done when: <criteria>`: lead → worker.
-- `DONE <id> | <name> | <summary> | <branch@sha or paths>`: worker → lead.
-- `QUESTION <id> | <name> | <question>`: worker → lead. Pause work on `<id>` until the answer comes.
-- `BLOCKED <id> | <name> | <what is needed>`: worker → lead.
+Between agents:
+
+- `TASK <id> | <goal> | inputs: <paths, branches> | done when: <criteria> | route: <agent> → … → {{LEAD}}`: lead → the first agent on the route.
+- `HANDOFF <id> | <from> | <result: branch@sha or paths> | <goal and done when from the TASK> | route: <the rest of the route>`: to the next agent on the route. When the next one is `{{LEAD}}`, send DONE instead.
+- `CHANGES <id> | <from> | <findings with file:line, or a path>`: reviewer, qa, or security → the author of the branch or file. The author fixes it, then sends HANDOFF back to the agent that sent CHANGES.
+- `QUESTION <id> | <from> | <question>`: to the agent that owns the answer: the analyst for the spec, the architect for the design, the branch's dev for its code. Pause work on `<id>` until the answer comes. If no agent owns the answer, send DECISION to `{{LEAD}}`.
+
+To `{{LEAD}}`:
+
+- `DONE <id> | <from> | <summary, with the verdict if you reviewed> | <branch@sha or paths>`: the last agent on the route.
+- `DECISION <id> | <from> | <what to decide> | options: <a>; <b> | recommend: <one>`: a choice outside your role: scope, priority, a disagreement the agents did not settle, or anything the human must approve. Pause work on `<id>` until the answer comes.
+- `BLOCKED <id> | <from> | <what is needed>`.
+- `NOTE <id> | <from> | <fact>`: only a fact that changes the plan: a risk, a scope surprise, or an interface change that agents agreed on. It needs no reply.
 
 Details longer than about 10 lines go into a file in your workdir; send its path. If `herdr agent prompt` fails with `agent_blocked`, run `herdr agent wait <to> --until idle --until done --timeout 600000`, then send once more.
 
-The lead reads a worker's output with `herdr agent read <name> --source recent-unwrapped --lines 200` and sees everyone's state with `herdr agent list`.
+To see where a task is, the lead reads an agent's output with `herdr agent read <name> --source recent-unwrapped --lines 200` and sees everyone's state with `herdr agent list`. It does not ask agents for status.
 
 ## Flow
 
-For each goal, the lead runs these stages in order. If a stage's role is not on the team, the lead does that stage itself.
+For each goal, the lead chooses the stages the goal needs and puts their agents, in this order, on the TASK's route. If a stage's role is not on the team, the lead does that stage itself before it sends the TASK, or leaves it out.
 
 1. **spec** (analyst): acceptance criteria.
 2. **design** (architect): a design note when the change crosses modules.
 3. **build** (dev): test-first, on the dev's own branch.
-4. **test** (qa): the full suite plus new tests against the dev branch.
-5. **review** (reviewer): APPROVE, or CHANGES on `{{MAIN_BRANCH}}...<branch>`.
-6. **integrate** (lead): merge an approved branch with green tests into `{{MAIN_BRANCH}}`. Devs then rebase.
-7. **docs and release** (docs, devops).
+4. **test** (qa): the full suite plus new tests against the dev branch. Bugs go to the dev as CHANGES.
+5. **review** (reviewer, then security if on the team): APPROVE, or CHANGES on `{{MAIN_BRANCH}}...<branch>`.
+6. **integrate** (lead): when DONE arrives with an APPROVE, merge the branch with green tests into `{{MAIN_BRANCH}}`. Tell the devs; they rebase.
+7. **docs and release** (docs, devops): a new TASK after the merge.
 
-Independent tasks run in parallel lanes. Each worker has one task at a time.
+Independent tasks run in parallel lanes. Each agent works on one task at a time. A TASK or HANDOFF that arrives while you are busy waits until you finish; take them in the order they came.
 
 ## Git
 

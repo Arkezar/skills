@@ -5,7 +5,7 @@ description: Staff an SDLC team of coding agents that work together in Herdr. Su
 
 # Herdr team
 
-A **team** is a lead plus workers, each a coding agent in its own Herdr tab, running one SDLC loop: spec → design → build → test → review → integrate. The lead is the **hub**: it alone assigns work, workers report only to it, the human talks only to it. Every writer gets its own git worktree.
+A **team** is a lead plus workers, each a coding agent in its own Herdr tab, running one SDLC loop: spec → design → build → test → review → integrate. The lead alone assigns work and merges, and the human talks only to it. Inside a task, agents message each other directly through Herdr. The lead gets only results, decisions to take, and facts that change the plan. Every writer gets its own git worktree.
 
 Talk to the user in their language. Write the team files in the language of the repo's docs (English for an empty repo).
 
