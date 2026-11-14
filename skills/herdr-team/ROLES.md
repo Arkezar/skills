@@ -1,6 +1,6 @@
 # Roles
 
-The role catalog for step 3. A **writer** gets its own worktree. A **reader** works in the main checkout and reads other branches with `git diff`/`git show`. Tiers map to concrete models in [HARNESSES.md](HARNESSES.md).
+The role catalog for step 3. A **writer** gets its own worktree. A **reader** works in the main checkout and reads other branches with `git diff`/`git show`. Tiers map to concrete models in [HARNESSES.md](HARNESSES.md). Every role follows the gates and evidence rules in `.herdr-team/SDLC.md`.
 
 ## Sizing
 
@@ -9,9 +9,9 @@ Start from the core four: lead, dev, reviewer, auditor. That is the smallest tea
 ## lead — delivery lead (always, exactly 1)
 
 - Mission: turn the human's goals into merged, reviewed changes.
-- Owns: the plan and task list, dispatch with a route per task, the decisions agents send it, an answer to every DRIFT, merges into the main branch, all talk with the human except refining ideas.
-- Done means: each goal is merged with tests green and an APPROVE, or the human agreed to park it.
-- Reader; merges are its only writes. Tier: frontier, high effort, on a harness that queues input while it works.
+- Owns: the durable task state, preflight assignment, routes, decisions, answers to DRIFT, and integration through the accepted workflow. Owns all human communication except idea refinement.
+- Done means: each goal reaches its agreed merged or released target with SDLC evidence, or the human parks it.
+- Reader of implementation code. Its writes are task-state updates and integration. When it refines a spec, a writer commits that spec. Tier: frontier, high effort, on a harness that queues input while it works.
 
 ## analyst — requirements
 
@@ -33,15 +33,15 @@ Start from the core four: lead, dev, reviewer, auditor. That is the smallest tea
 
 - Mission: implement tasks test-first on its own branch.
 - Owns: the code and unit tests for its tasks, fixes for CHANGES from qa and the reviewer, keeping its branch rebased, commits in the repo's message convention.
-- Done means: the acceptance criteria are met, the repo's tests, lint, and typecheck are green on the branch, and branch@sha went to the next agent on the route.
+- Done means: the acceptance criteria and applicable SDLC checks pass on the candidate SHA. The next agent receives branch@sha and evidence. Incorporate QA's test commits before final validation and review.
 - Count: one per independently changeable area (`dev-web`, `dev-api`), at most 3.
 - Writer. Tier: workhorse, medium effort.
 
 ## qa — quality
 
 - Mission: prove the change works, and find where it does not.
-- Owns: a test plan per goal, integration and e2e tests, full-suite runs on dev branches, bug reports with repro steps sent to the branch's dev.
-- Done means: every acceptance criterion maps to a passing test, or the dev got a bug report as CHANGES.
+- Owns: a test plan per goal, integration and e2e tests, required checks on the combined candidate, and bug reports with repro steps. Commit tests only on its own branch. Follow the QA commit flow in PROTOCOL.md.
+- Done means: every AC maps to a passing test or justified manual check under SDLC.md, with evidence for the combined candidate SHA. Otherwise send CHANGES to the dev.
 - Include when: there is a test suite or a UI/API surface, or the profile lists risk areas.
 - Writer (tests). Tier: workhorse or fast.
 
@@ -49,7 +49,7 @@ Start from the core four: lead, dev, reviewer, auditor. That is the smallest tea
 
 - Mission: an independent second opinion before every merge.
 - Owns: reviewing `<main>...team/<role>` against the spec, the conventions, and security basics. The verdict is APPROVE, or CHANGES with file:line findings.
-- Done means: every branch it was given has a verdict. CHANGES go to the branch's dev, APPROVE goes to the next agent on the route.
+- Done means: each candidate has a verdict for its exact SHA. CHANGES go to its author. APPROVE and prior evidence go to the next agent. Review again after candidate changes. Remain independent of all candidate authors.
 - Reader. Tier: frontier, from a different model vendor than the devs when one is available.
 
 ## auditor — drift check (always, exactly 1)
@@ -62,7 +62,8 @@ Start from the core four: lead, dev, reviewer, auditor. That is the smallest tea
 ## devops — delivery
 
 - Mission: keep build, CI, and release working.
-- Owns: CI config, containers, IaC, release scripts, release notes.
+- Owns: CI config, containers, IaC, release scripts, release notes, artifact identity, smoke checks, and the recovery procedure.
+- Done means: delivery reaches the release gate in SDLC.md, or the lead receives a blocker with evidence. Prepare code changes on its branch for validation and review before release.
 - Include when: CI config, a Dockerfile, IaC, or deploy scripts exist, or a goal includes shipping.
 - Writer. Tier: workhorse.
 
@@ -92,7 +93,7 @@ Queries for `npx skills find`. Add the stack to each query (`react testing`, not
 | dev | `<stack>` best practices, tdd |
 | qa | `<test framework>`, e2e testing |
 | reviewer | code review |
-| auditor | none: it works from PROTOCOL.md |
+| auditor | none: it works from PROTOCOL.md and the policy's goal state |
 | devops | `<CI system>`, docker |
 | security | security review |
 | docs | documentation, readme |
