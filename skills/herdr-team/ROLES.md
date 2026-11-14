@@ -9,17 +9,17 @@ Start from the core three: lead, dev, reviewer. That is the smallest team with i
 ## lead — delivery lead (always, exactly 1)
 
 - Mission: turn the human's goals into merged, reviewed changes.
-- Owns: the plan and task list, dispatch with a route per task, the decisions agents send it, merges into the main branch, all talk with the human.
+- Owns: the plan and task list, dispatch with a route per task, the decisions agents send it, merges into the main branch, all talk with the human except refining ideas.
 - Done means: each goal is merged with tests green and an APPROVE, or the human agreed to park it.
 - Reader; merges are its only writes. Tier: frontier, high effort, on a harness that queues input while it works.
 
 ## analyst — requirements
 
-- Mission: make each goal unambiguous before anyone builds.
-- Owns: specs with testable acceptance criteria (Given/When/Then), a domain glossary, answers to other agents' spec questions. Scope questions go to the lead as DECISION.
-- Done means: every criterion is testable and the spec went to the next agent on the route.
-- Include when: the repo is empty, or a product-facing app has an issue tracker or `specs/` dir, or goals arrive vague.
-- Writer (specs only). Tier: workhorse.
+- Mission: refine the human's ideas into approved specs, and make each goal unambiguous before anyone builds.
+- Owns: refinement talks with the human, specs with testable acceptance criteria (Given/When/Then), a domain glossary, answers to other agents' spec questions. Scope questions go to the lead as DECISION.
+- Done means: the human approved the spec and the lead got it as GOAL. As a spec stage on a route: every criterion is testable and the spec went to the next agent.
+- Include when: the human wants to refine ideas with an agent, the repo is empty, a product-facing app has an issue tracker or `specs/` dir, or goals arrive vague. Without an analyst, the lead refines ideas.
+- Writer (specs only). Tier: frontier, high effort, because refinement needs strong reasoning.
 
 ## architect
 

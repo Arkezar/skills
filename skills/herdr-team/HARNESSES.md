@@ -8,8 +8,8 @@ Only propose a model ID that discover printed in that harness's catalog. If a ha
 
 Map role tiers to the catalog's own words, not to remembered names (they go stale):
 
-- **frontier**: the most capable current model ("frontier", "most demanding", the top family at its highest version). Use it for lead, architect, reviewer, and security.
-- **workhorse**: the catalog's recommended coding or everyday model. Use it for dev, analyst, devops, and qa.
+- **frontier**: the most capable current model ("frontier", "most demanding", the top family at its highest version). Use it for lead, analyst, architect, reviewer, and security.
+- **workhorse**: the catalog's recommended coding or everyday model. Use it for dev, devops, and qa.
 - **fast**: the smallest current model ("fast", "affordable", mini or nano sizes). Use it for docs, and for qa on a tight budget.
 
 Choose a current-generation model over entries the catalog marks "older" or "previous". Vendor means the model's maker, not the harness: pi can serve Claude models, so pi and Claude Code can be the same vendor. When two or more vendors are available, put the reviewer on a different vendor from the devs. Agents message each other directly, and each message arrives as a prompt. So prefer harnesses whose TUI queues input typed while it works (pi and Claude Code do). The lead must have one.
