@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Start every agent in <team-dir>/team.tsv in its own tab of one Herdr workspace,
-# then hand each agent its role brief. Rerunnable: live agents are skipped.
+# then hand each agent its role brief. Reruns brief existing idle agents again.
 # Usage: launch-team.sh [team-dir]   (default .herdr-team; run from a Herdr pane)
 #
 # team.tsv: one agent per line, TAB-separated, lead first:
@@ -11,10 +11,32 @@ set -euo pipefail
 die() { echo "launch-team: $*" >&2; exit 1; }
 [ "${HERDR_ENV:-}" = 1 ] || die "run this from a Herdr pane (HERDR_ENV=1)"
 command -v jq >/dev/null || die "jq is required"
-dir=$(cd "${1:-.herdr-team}" && pwd)
+dir=$(cd "${1:-.herdr-team}" && pwd) || die "team directory not found"
 [ -f "$dir/team.tsv" ] || die "$dir/team.tsv not found"
 root=$(git -C "$dir" rev-parse --show-toplevel)
+[ "$dir" = "$root/.herdr-team" ] || die "team directory must be <repo>/.herdr-team"
 label="$(basename "$root") team"
+common=$(git -C "$root" rev-parse --path-format=absolute --git-common-dir)
+
+# Validate every worktree before any Herdr side effects.
+count=0
+while IFS=$'\t' read -r -a f || [ "${#f[@]}" -gt 0 ]; do
+	[[ ${#f[@]} -eq 0 || ${f[0]} == \#* ]] && continue
+	[ "${#f[@]}" -ge 3 ] || die "team.tsv: expected name, kind, and workdir"
+	name=${f[0]}
+	[[ $name =~ ^[a-z][a-z0-9_-]{0,31}$ ]] || die "invalid agent name: $name"
+	cwd=$(cd "$root/${f[2]}" && pwd) || die "$name: workdir ${f[2]} does not exist"
+	[ "$(git -C "$cwd" rev-parse --show-toplevel)" = "$cwd" ] || die "$name: workdir must be a checkout root"
+	[ "$(git -C "$cwd" rev-parse --path-format=absolute --git-common-dir)" = "$common" ] || die "$name: workdir belongs to another repo"
+	git -C "$cwd" symbolic-ref -q HEAD >/dev/null || die "$name: workdir has a detached HEAD"
+	for file in team.tsv PROTOCOL.md SDLC.md "roles/$name.md"; do
+		[ -s "$dir/$file" ] || die "$file missing or empty; amend and accept the team configuration first"
+		if grep -Fq '{{' "$dir/$file"; then die "$file has unresolved placeholders"; fi
+		cmp -s "$dir/$file" "$cwd/.herdr-team/$file" || die "$name: stale $file; incorporate the accepted configuration on its branch"
+	done
+	count=$((count + 1))
+done <"$dir/team.tsv"
+[ "$count" -gt 0 ] || die "team.tsv has no agents"
 
 state() { herdr agent get "$1" | jq -r '.result.agent.agent_status'; }
 
@@ -28,34 +50,37 @@ wait_for_human() {
 ws=$(herdr workspace list | jq -r --arg l "$label" '.result.workspaces[] | select(.label == $l) | .workspace_id' | head -n1)
 lead=""
 
-while IFS=$'\t' read -r -a f; do
-	[[ ${#f[@]} -lt 3 || ${f[0]} == \#* ]] && continue
+while IFS=$'\t' read -r -a f || [ "${#f[@]}" -gt 0 ]; do
+	[[ ${#f[@]} -eq 0 || ${f[0]} == \#* ]] && continue
 	name=${f[0]} kind=${f[1]} args=("${f[@]:3}")
 	lead=${lead:-$name}
+	cwd=$(cd "$root/${f[2]}" && pwd)
 	if herdr agent get "$name" >/dev/null 2>&1; then
-		echo "$name: already running"
-		continue
-	fi
-	cwd=$(cd "$root/${f[2]}" && pwd) || die "$name: workdir ${f[2]} does not exist"
-
-	if [ -z "$ws" ]; then
-		out=$(herdr workspace create --cwd "$cwd" --label "$label" --no-focus)
-		ws=$(jq -r '.result.workspace.workspace_id' <<<"$out")
-		herdr tab rename "$(jq -r '.result.tab.tab_id' <<<"$out")" "$name" >/dev/null
-		pane=$(jq -r '.result.root_pane.pane_id' <<<"$out")
+		case $(state "$name") in
+		idle | done) echo "$name: already running; reading current instructions again" ;;
+		*) die "$name: finish or pause its current task before relaunch" ;;
+		esac
 	else
-		pane=$(herdr tab create --workspace "$ws" --cwd "$cwd" --label "$name" --no-focus | jq -r '.result.root_pane.pane_id')
+		if [ -z "$ws" ]; then
+			out=$(herdr workspace create --cwd "$cwd" --label "$label" --no-focus)
+			ws=$(jq -r '.result.workspace.workspace_id' <<<"$out")
+			herdr tab rename "$(jq -r '.result.tab.tab_id' <<<"$out")" "$name" >/dev/null
+			pane=$(jq -r '.result.root_pane.pane_id' <<<"$out")
+		else
+			pane=$(herdr tab create --workspace "$ws" --cwd "$cwd" --label "$name" --no-focus | jq -r '.result.root_pane.pane_id')
+		fi
+
+		if ! err=$(herdr agent start "$name" --kind "$kind" --pane "$pane" --timeout 120000 -- "${args[@]}" 2>&1 >/dev/null); then
+			grep -q agent_not_ready <<<"$err" || die "$name: $err"
+			wait_for_human "$name" "answer its startup dialog in tab '$name'"
+		fi
 	fi
 
-	if ! err=$(herdr agent start "$name" --kind "$kind" --pane "$pane" --timeout 120000 -- "${args[@]}" 2>&1 >/dev/null); then
-		grep -q agent_not_ready <<<"$err" || die "$name: $err"
-		wait_for_human "$name" "answer its startup dialog in tab '$name'"
-	fi
-
-	herdr agent prompt "$name" "You are $name on this team. Read .herdr-team/PROTOCOL.md and .herdr-team/roles/$name.md now and follow them for the rest of this session. Reply with one line: ready." \
+	herdr agent prompt "$name" "You are $name on this team. Read .herdr-team/PROTOCOL.md, .herdr-team/SDLC.md, and .herdr-team/roles/$name.md now and follow them for the rest of this session. Read the policy's task state before resuming work. The lead must reconcile state and complete preflight before implementation. Reply with one line: ready." \
 		--wait --timeout 300000 >/dev/null || die "$name: role brief not acknowledged; inspect with: herdr agent read $name"
 	[ "$(state "$name")" = blocked ] && wait_for_human "$name" "answer its approval dialog in tab '$name'"
 	echo "$name: ready ($kind in $cwd)"
 done <"$dir/team.tsv"
 
-echo "team ready: workspace $ws, talk to ${lead:-the lead} (herdr agent focus ${lead:-<lead>})"
+echo "team ready: workspace $ws, talk to $lead (herdr agent focus $lead)"
+echo "SDLC readiness: the lead must verify preflight and task state before implementation."
