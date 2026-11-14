@@ -14,6 +14,30 @@ Every field needs a concrete value. Use `not applicable: <reason>` for controls 
 - Risk controls: {{RISK_CONTROLS_AND_OWNERS}} (security, dependencies, secrets, data, compliance, and accessibility where applicable).
 - State location: {{STATE_LOCATION}} (tracker URL or absolute path to STATE.md in the main checkout).
 
+## Issue tracker
+
+- Tracker choice: {{ISSUE_TRACKER}} (provider, or `none: local STATE.md`).
+- Target: {{TRACKER_TARGET}} (instance URL and repository or project identifier).
+- Access: {{TRACKER_ACCESS}} (available CLI or MCP tool in the lead's harness, authentication method, and credential reference).
+- Permissions: {{TRACKER_PERMISSIONS}} (allowed reads, issue creation, updates, comments, transitions, and actions that need human approval).
+- Status mapping: {{TRACKER_STATUS_MAPPING}} (team statuses to native statuses, labels, or fields, including merged versus released).
+
+Choose the tracker explicitly with the human during first setup, even for an existing repo.
+Treat remotes and existing integrations as recommendations, not consent.
+Use one source of truth: the selected tracker, or local STATE.md after an explicit `none` decision.
+Set the state location to that source. Link goals, AC, branches, PRs, and evidence to its task records.
+Use native issue IDs in task messages. If one issue contains several tasks, record a stable mapping for their task IDs.
+The lead owns tracker updates. Other agents send changes through the protocol unless the policy grants them tracker permissions.
+Record credential names or profile references only. Keep token values outside team files and messages.
+
+Before launch, verify the target and read access from the lead's harness with a read-only operation.
+Confirm required write permissions from provider metadata or the human. Do not create test issues to probe permissions.
+Record the verification result and any blocker. Resolve missing access before dispatching implementation tasks.
+Create or change external projects, labels, or workflows only after explicit approval of those side effects.
+If the tracker becomes unavailable, report BLOCKED and preserve pending updates for reconciliation.
+Resume after access returns, or after the human accepts a policy amendment that changes the source of truth.
+For `none`, mark external access fields as not applicable. Keep the local state path and team statuses concrete.
+
 ## Environment and checks
 
 Use one row per check and stack directory. Record commands from the repo, not guessed commands.
@@ -70,7 +94,7 @@ A waiver is not a passing result. Never waive independent review or required hum
 The lead maintains the state location after every handoff, verdict, decision, blocker, integration, and release.
 All agents use this shared location, not the STATE.md snapshot in their own worktree.
 Workers send evidence with HANDOFF, CHANGES, and DONE. The lead can read worker output to recover a missed update.
-Use this minimum record, whether in the tracker or the fallback file:
+Use this minimum record in the selected tracker or the explicitly chosen local state file:
 
 | Task | Goal / AC | Owner | Status | Branch / SHA | Evidence / verdicts | Dependencies / blockers |
 |---|---|---|---|---|---|---|
