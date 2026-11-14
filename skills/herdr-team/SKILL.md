@@ -25,9 +25,14 @@ Done when every available harness has a catalog, or is marked default-only.
 
 Branch on the repo facts:
 
-- **Existing team** (`existing team: yes`): read its roster, protocol, SDLC policy, roles, and task state. Ask: relaunch, amend, or rebuild. For relaunch, verify current commands, approvals, worktree branches, and policy copies before step 7. Reconcile open tasks with branches and CI. If the policy is absent or outdated, use the amendment path from step 3 and obtain acceptance first.
+- **Existing team** (`existing team: yes`): read its roster, protocol, SDLC policy, roles, and task state. Ask: relaunch, amend, or rebuild. For relaunch, verify current commands, approvals, tracker access, worktree branches, and policy copies before step 7. Reconcile open tasks with branches and CI. If the policy is absent or outdated, use the amendment path from step 3 and obtain acceptance first.
 - **Empty** (`empty: yes`): run the interview in INTERVIEW.md. Done when the brief has every field answered.
 - **Otherwise**, survey: README, manifests, CI config, test dirs, `AGENTS.md`/`CLAUDE.md`, `docs/`, `specs/`, ADRs, `git log --oneline -30`, `git worktree list`, `git remote -v`. Write a **profile**: stacks and their directories, size, test maturity (runner, CI), delivery (CI, containers, IaC, releases), risk areas (auth, payments, PII, public endpoints, secrets), independently changeable areas (lanes), and the conventions in force. Done when every claim cites a path or a command's output.
+
+For every first setup, ask the human to choose the issue tracker explicitly, including for nonempty repos.
+Recommend the existing tracker when repo evidence identifies one. The remote host alone does not select it.
+Offer `none: local STATE.md` as an explicit alternative. Complete the Issue tracker section in templates/SDLC.md.
+If an existing team's policy lacks this decision, amend it with the human before relaunch.
 
 ## 3. Compose
 
@@ -37,7 +42,7 @@ Branch on the repo facts:
 - **Workdir**: writers get `../<repo>-<role>` on branch `team/<role>`. Readers use `.`. Resolve the main branch from repo policy and the remote default. Verify the lead's checkout uses that branch.
 - **Skills** per role: first the installed ones (`npx -y skills@latest ls`, then with `-g`), then `npx -y skills@latest find <query>` with the seeds in ROLES.md. Keep at most 3 per role, each with 1K+ installs or a known publisher. The lead always gets `herdrdev/herdr@herdr`.
 - **Integrations**: each chosen kind that discover does not list as `current` needs `herdr integration install <kind>`.
-- **SDLC policy**: fill every field in templates/SDLC.md from the profile or brief. Define checks for every stack directory, integration mode, required CI, approvals, risk controls, state location, and release contract. Assign duties to named agents, including folded roles. Record missing controls with owners and prerequisite tasks. For an empty repo, propose a setup goal with numbered AC and a bootstrap task that establishes setup and checks. Tie every prerequisite task to an accepted goal and AC. Ask the human about decisions the repo cannot settle. Reuse existing process and tracker conventions.
+- **SDLC policy**: fill every field in templates/SDLC.md from the profile or brief. Define checks for every stack directory, integration mode, required CI, approvals, risk controls, issue tracker configuration, state location, and release contract. Assign duties to named agents, including folded roles. Record missing controls with owners and prerequisite tasks. For an empty repo, propose a setup goal with numbered AC and a bootstrap task that establishes setup and checks. Tie every prerequisite task to an accepted goal and AC. Ask the human about decisions the repo cannot settle. Reuse existing process and tracker conventions.
 
 ## 4. Propose and get acceptance
 
@@ -49,8 +54,8 @@ Send one message:
    | Agent | Role | Harness | Model | Effort | Workdir (branch) | Skills | Why |
    |---|---|---|---|---|---|---|---|
 
-3. The proposed SDLC policy: check commands and directories, mandatory gates, integration mode, approvals, risk controls, state location, and release criteria. Show missing controls and prerequisite tasks explicitly.
-4. The side effects, in the order step 6 runs them: files written, integrations installed, skill install commands, the commit, worktrees, and launch topology (one workspace `<repo> team`, one tab per agent). Add a cost note: how many agents run frontier models.
+3. The proposed SDLC policy: check commands and directories, mandatory gates, integration mode, approvals, risk controls, and release criteria. Show the tracker choice, target, access method, allowed actions, status mapping, and canonical state location. Show missing controls and prerequisite tasks explicitly.
+4. The side effects, in the order step 6 runs them: files written, any approved tracker changes, integrations installed, skill install commands, the commit, worktrees, and launch topology (one workspace `<repo> team`, one tab per agent). Add a cost note: how many agents run frontier models.
 5. Jev: if discover shows `OPENCODE_API_KEY: set`, offer the Jev pre-check from HARNESSES.md, and say what it sends to OpenCode. Without it, every lead task wakes the auditor.
 6. Approvals: agents keep their harness's default approvals, and a blocked agent shows up in Herdr's sidebar. Offer the autonomy flags from HARNESSES.md if the user wants fewer dialogs.
 
@@ -63,7 +68,7 @@ Write these files in `.herdr-team/`:
 - `team.tsv`: lead first, in the format given in the header of `scripts/launch-team.sh`. Each agent arg is its own TAB field.
 - `PROTOCOL.md`: from `templates/PROTOCOL.md`, with every `{{…}}` filled in. `{{REFINER}}` is the analyst, or the lead if the team has no analyst.
 - `SDLC.md`: from `templates/SDLC.md`, with every `{{…}}` filled in using the accepted policy.
-- `STATE.md`, only when no existing tracker is chosen: the task table from SDLC.md, including prerequisite tasks. Set the policy's state location to this file's absolute path in the main checkout. Preserve existing task history on amendments.
+- `STATE.md`, only when the human explicitly chose `none: local STATE.md`: the task table from SDLC.md, including prerequisite tasks. Set the policy's state location to this file's absolute path in the main checkout. Preserve existing task history on amendments.
 - `roles/<name>.md`, one per agent: its ROLES.md entry made concrete for this repo, with real paths, its branch, skills, assigned gates, and conventions. Reference commands in SDLC.md instead of duplicating them. The lead's file also says: use the herdr skill, and after `ready`, wait for a goal from the human or a GOAL message. The analyst's file says: after `ready`, wait for the human to bring an idea, or for a TASK. The auditor's file says: after `ready`, wait for copies from the lead, and stay silent while the work is on course.
 - `team-send.sh`: a copy of `scripts/team-send.sh`, executable.
 - `jev`: one line with the Jev model id, only if the user accepted the pre-check.
@@ -72,6 +77,11 @@ Write these files in `.herdr-team/`:
 Done when no `{{` remains, every roster name has a role file, and every policy duty has an owner.
 
 ## 6. Install and prepare
+
+Before installation, verify the accepted tracker configuration as templates/SDLC.md requires.
+Use read-only access checks from the lead's harness. Record the result without credentials.
+If access or the target is missing, stop and ask the human to resolve it. Never replace the tracker silently.
+For a local-state choice, verify the shared file exists and the lead can update it.
 
 Run these in the repo root, in order. Stop at the first failure and report it.
 
