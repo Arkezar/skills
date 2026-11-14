@@ -5,7 +5,7 @@ description: Staff an SDLC team of coding agents that work together in Herdr. Su
 
 # Herdr team
 
-A **team** is a lead plus workers, each a coding agent in its own Herdr tab, running one SDLC loop: spec → design → build → test → review → integrate. The lead alone assigns work and merges. The human talks to the lead, and refines new ideas with the analyst. Inside a task, agents message each other directly through Herdr. The lead gets only results, decisions to take, and facts that change the plan. Every writer gets its own git worktree.
+A **team** is a lead plus workers, each a coding agent in its own Herdr tab, running one SDLC loop: spec → design → build → test → review → integrate. The lead alone assigns work and merges. The human talks to the lead, and refines new ideas with the analyst. Inside a task, agents message each other directly through Herdr. The lead gets only results, decisions to take, and facts that change the plan. An auditor checks each task the lead sends against the goal, so the lead does not drift into work no goal needs. Every writer gets its own git worktree.
 
 Talk to the user in their language. Write the team files in the language of the repo's docs (English for an empty repo).
 
@@ -58,7 +58,7 @@ Write these files in `.herdr-team/`:
 
 - `team.tsv`: lead first, in the format given in the header of `scripts/launch-team.sh`. Each agent arg is its own TAB field.
 - `PROTOCOL.md`: from `templates/PROTOCOL.md`, with every `{{…}}` filled in. `{{REFINER}}` is the analyst, or the lead if the team has no analyst.
-- `roles/<name>.md`, one per agent: its ROLES.md entry made concrete for this repo, with real paths, the build/test/lint commands, its branch, its skills, and the conventions in force. The lead's file also says: use the herdr skill, and after `ready`, wait for a goal from the human or a GOAL message. The analyst's file says: after `ready`, wait for the human to bring an idea, or for a TASK.
+- `roles/<name>.md`, one per agent: its ROLES.md entry made concrete for this repo, with real paths, the build/test/lint commands, its branch, its skills, and the conventions in force. The lead's file also says: use the herdr skill, and after `ready`, wait for a goal from the human or a GOAL message. The analyst's file says: after `ready`, wait for the human to bring an idea, or for a TASK. The auditor's file says: after `ready`, wait for copies from the lead, and stay silent while the work is on course.
 - `BRIEF.md`: the interview brief (empty-repo branch only).
 
 Done when no `{{` remains and every roster name has a role file.

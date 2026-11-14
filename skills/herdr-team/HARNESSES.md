@@ -9,10 +9,10 @@ Only propose a model ID that discover printed in that harness's catalog. If a ha
 Map role tiers to the catalog's own words, not to remembered names (they go stale):
 
 - **frontier**: the most capable current model ("frontier", "most demanding", the top family at its highest version). Use it for lead, analyst, architect, reviewer, and security.
-- **workhorse**: the catalog's recommended coding or everyday model. Use it for dev, devops, and qa.
+- **workhorse**: the catalog's recommended coding or everyday model. Use it for dev, devops, qa, and auditor.
 - **fast**: the smallest current model ("fast", "affordable", mini or nano sizes). Use it for docs, and for qa on a tight budget.
 
-Choose a current-generation model over entries the catalog marks "older" or "previous". Vendor means the model's maker, not the harness: pi can serve Claude models, so pi and Claude Code can be the same vendor. When two or more vendors are available, put the reviewer on a different vendor from the devs. Agents message each other directly, and each message arrives as a prompt. So prefer harnesses whose TUI queues input typed while it works (pi and Claude Code do). The lead must have one.
+Choose a current-generation model over entries the catalog marks "older" or "previous". Vendor means the model's maker, not the harness: pi can serve Claude models, so pi and Claude Code can be the same vendor. When two or more vendors are available, put the reviewer on a different vendor from the devs, and the auditor on a different vendor from the lead. Agents message each other directly, and each message arrives as a prompt. So prefer harnesses whose TUI queues input typed while it works (pi and Claude Code do). The lead must have one.
 
 ## Kinds verified on Herdr 0.9.5
 
@@ -27,7 +27,7 @@ Write each launch arg as its own TAB field in `team.tsv`.
 
 Messaging needs these extra args. Without them, every report becomes an approval dialog, or fails:
 
-- `claude`: workers add `--allowedTools` `Bash(herdr agent prompt *),Bash(herdr agent wait *)`. The lead also adds `Bash(herdr agent read *),Bash(herdr agent get *),Bash(herdr agent list)` to that same field. Keep `herdr agent send-keys` and `herdr pane` out: they can answer another agent's dialogs or run commands in other panes.
+- `claude`: workers add `--allowedTools` `Bash(herdr agent prompt *),Bash(herdr agent wait *)`. The lead also adds `Bash(herdr agent read *),Bash(herdr agent get *),Bash(herdr agent list)` to that same field. The auditor adds `Bash(herdr agent read *),Bash(herdr agent list),Bash(herdr notification show *)`. Keep `herdr agent send-keys` and `herdr pane` out: they can answer another agent's dialogs or run commands in other panes.
 - `codex`: add `-c` `sandbox_workspace_write.network_access=true`. Without it, the sandbox denies the Herdr socket (verified). This also opens network access for the sandbox, so say so in the proposal.
 
 A new worktree triggers trust dialogs in claude and codex. `launch-team.sh` waits for the human to answer them.

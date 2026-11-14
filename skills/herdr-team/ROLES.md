@@ -4,19 +4,19 @@ The role catalog for step 3. A **writer** gets its own worktree. A **reader** wo
 
 ## Sizing
 
-Start from the core three: lead, dev, reviewer. That is the smallest team with independent review. Add a role only when a profile fact matches its "include when". Above six agents, the lead spends more on coordination than an extra lane gives back. In a small repo, fold roles together (analyst into lead, security into reviewer, devops into dev) and name the fold in the role file.
+Start from the core four: lead, dev, reviewer, auditor. That is the smallest team with independent review and a check that the lead stays on the goal. Add a role only when a profile fact matches its "include when". Above six agents, the lead spends more on coordination than an extra lane gives back. In a small repo, fold roles together (analyst into lead, security into reviewer, devops into dev) and name the fold in the role file.
 
 ## lead — delivery lead (always, exactly 1)
 
 - Mission: turn the human's goals into merged, reviewed changes.
-- Owns: the plan and task list, dispatch with a route per task, the decisions agents send it, merges into the main branch, all talk with the human except refining ideas.
+- Owns: the plan and task list, dispatch with a route per task, the decisions agents send it, an answer to every DRIFT, merges into the main branch, all talk with the human except refining ideas.
 - Done means: each goal is merged with tests green and an APPROVE, or the human agreed to park it.
 - Reader; merges are its only writes. Tier: frontier, high effort, on a harness that queues input while it works.
 
 ## analyst — requirements
 
 - Mission: refine the human's ideas into approved specs, and make each goal unambiguous before anyone builds.
-- Owns: refinement talks with the human, specs with testable acceptance criteria (Given/When/Then), a domain glossary, answers to other agents' spec questions. Scope questions go to the lead as DECISION.
+- Owns: refinement talks with the human, specs with numbered, testable acceptance criteria (Given/When/Then), a domain glossary, answers to other agents' spec questions. Scope questions go to the lead as DECISION.
 - Done means: the human approved the spec and the lead got it as GOAL. As a spec stage on a route: every criterion is testable and the spec went to the next agent.
 - Include when: the human wants to refine ideas with an agent, the repo is empty, a product-facing app has an issue tracker or `specs/` dir, or goals arrive vague. Without an analyst, the lead refines ideas.
 - Writer (specs only). Tier: frontier, high effort, because refinement needs strong reasoning.
@@ -52,6 +52,13 @@ Start from the core three: lead, dev, reviewer. That is the smallest team with i
 - Done means: every branch it was given has a verdict. CHANGES go to the branch's dev, APPROVE goes to the next agent on the route.
 - Reader. Tier: frontier, from a different model vendor than the devs when one is available.
 
+## auditor — drift check (always, exactly 1)
+
+- Mission: keep the lead's work on the goals the human set, so the team does not dig into work that no goal needs.
+- Owns: checking each copy the lead sends (GOAL, TASK, DECIDED, CLOSED) against the goal's numbered criteria, DRIFT reports to the lead, and a notification to the human when the lead goes on drifting.
+- Done means: every copy was checked, and every drift it found was answered by a DECIDED or reported to the human.
+- Reader. It never sends work to workers. Tier: workhorse, medium effort, from a different model vendor than the lead when one is available.
+
 ## devops — delivery
 
 - Mission: keep build, CI, and release working.
@@ -85,6 +92,7 @@ Queries for `npx skills find`. Add the stack to each query (`react testing`, not
 | dev | `<stack>` best practices, tdd |
 | qa | `<test framework>`, e2e testing |
 | reviewer | code review |
+| auditor | none: it works from PROTOCOL.md |
 | devops | `<CI system>`, docker |
 | security | security review |
 | docs | documentation, readme |
