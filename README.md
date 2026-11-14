@@ -3,8 +3,8 @@
 Agent skills you can install with the [skills CLI](https://github.com/vercel-labs/skills).
 
 ```bash
-npx skills add ~/Source/skills --skill herdr-team          # from this checkout
-npx skills add <git-url-of-this-repo> --skill herdr-team   # once it is published
+npx skills add Arkezar/skills --skill herdr-team    # from GitHub
+npx skills add ~/Source/skills --skill herdr-team    # from a local checkout
 ```
 
 | Skill | What it does |
