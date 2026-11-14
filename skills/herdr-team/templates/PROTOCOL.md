@@ -16,7 +16,7 @@ This team works on `{{REPO}}`. The main branch is `{{MAIN_BRANCH}}`. The human t
 
 ## Messages
 
-Send one line per message with Herdr:
+Send one line per message with Herdr. `{{LEAD}}` sends with `.herdr-team/team-send.sh <to> "<message>"` instead, with the same arguments (see Staying on course):
 
 ```bash
 herdr agent prompt <to> "<message>"
@@ -53,12 +53,13 @@ To see where a task is, the lead reads an agent's output with `herdr agent read 
 
 ## Staying on course
 
-`{{AUDITOR}}` checks that the lead's work serves the open goals and nothing else. `{{LEAD}}` sends it these copies, without `--wait`:
+`{{AUDITOR}}` checks that the lead's work serves the open goals and nothing else. `{{LEAD}}` sends every message with `.herdr-team/team-send.sh`. The script logs each GOAL, TASK, DECIDED, and CLOSED in `$(git rev-parse --path-format=absolute --git-common-dir)/herdr-team.log` and copies it to `{{AUDITOR}}` as `CC <message>`. `{{LEAD}}`:
 
-- each GOAL it takes on, before its first TASK. For a goal the human gave it directly: `GOAL <slug> | {{LEAD}} | <the goal> | criteria: AC1 <…>; AC2 <…>`.
-- each TASK it sends.
-- `DECIDED <id> | {{LEAD}} | <its answer to a DECISION or a DRIFT>`.
-- `CLOSED <slug> | {{LEAD}} | merged <sha>, or parked by the human`.
+- sends each GOAL it takes on to `{{AUDITOR}}`, before its first TASK. For a goal from the refiner, it does this after it merges the spec. For a goal the human gave it directly: `GOAL <slug> | {{LEAD}} | <the goal> | criteria: AC1 <…>; AC2 <…>`.
+- answers each DECISION with `DECIDED <id> | {{LEAD}} | <answer>` to the agent that asked, and each DRIFT with DECIDED to `{{AUDITOR}}`.
+- sends `CLOSED <slug> | {{LEAD}} | merged <sha>, or parked by the human` to `{{AUDITOR}}` when a goal ends.
+
+Jev pre-check: when `.herdr-team/jev` holds a model id and `OPENCODE_API_KEY` is set, the script first asks Jev whether a TASK serves its goal. A TASK that Jev finds clearly on course is only logged. Every other TASK reaches `{{AUDITOR}}` with Jev's verdict (`| jev: <choice> <confidence>`). Before it judges a copy, `{{AUDITOR}}` reads the log for the goal's full history.
 
 `{{AUDITOR}}` stays silent while the work is on course. It sends `DRIFT <slug> | {{AUDITOR}} | <what drifts, from which criterion> | recommend: drop, park, or ask the human` to `{{LEAD}}` when:
 

@@ -48,7 +48,8 @@ Send one message:
    |---|---|---|---|---|---|---|---|
 
 3. The side effects, in the order step 6 runs them: files written, integrations installed, skill install commands, the commit, worktrees, and launch topology (one workspace `<repo> team`, one tab per agent). Add a cost note: how many agents run frontier models.
-4. Approvals: agents keep their harness's default approvals, and a blocked agent shows up in Herdr's sidebar. Offer the autonomy flags from HARNESSES.md if the user wants fewer dialogs.
+4. Jev: if discover shows `OPENCODE_API_KEY: set`, offer the Jev pre-check from HARNESSES.md, and say what it sends to OpenCode. Without it, every lead task wakes the auditor.
+5. Approvals: agents keep their harness's default approvals, and a blocked agent shows up in Herdr's sidebar. Offer the autonomy flags from HARNESSES.md if the user wants fewer dialogs.
 
 Ask: accept, amend, or cancel (use the harness's question tool if it has one). After an amendment, show the full table again. Write and install nothing until the user explicitly accepts the table as shown. Done when they have.
 
@@ -59,6 +60,8 @@ Write these files in `.herdr-team/`:
 - `team.tsv`: lead first, in the format given in the header of `scripts/launch-team.sh`. Each agent arg is its own TAB field.
 - `PROTOCOL.md`: from `templates/PROTOCOL.md`, with every `{{…}}` filled in. `{{REFINER}}` is the analyst, or the lead if the team has no analyst.
 - `roles/<name>.md`, one per agent: its ROLES.md entry made concrete for this repo, with real paths, the build/test/lint commands, its branch, its skills, and the conventions in force. The lead's file also says: use the herdr skill, and after `ready`, wait for a goal from the human or a GOAL message. The analyst's file says: after `ready`, wait for the human to bring an idea, or for a TASK. The auditor's file says: after `ready`, wait for copies from the lead, and stay silent while the work is on course.
+- `team-send.sh`: a copy of `scripts/team-send.sh`, executable.
+- `jev`: one line with the Jev model id, only if the user accepted the pre-check.
 - `BRIEF.md`: the interview brief (empty-repo branch only).
 
 Done when no `{{` remains and every roster name has a role file.

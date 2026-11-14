@@ -65,7 +65,8 @@ for kind in $kinds; do
 done
 
 section tools
-for t in git jq npx; do printf '%s: %s\n' "$t" "$(command -v "$t" || echo MISSING)"; done
+for t in git jq npx curl; do printf '%s: %s\n' "$t" "$(command -v "$t" || echo MISSING)"; done
+echo "OPENCODE_API_KEY: $([ -n "${OPENCODE_API_KEY:-}" ] && echo set || echo 'not set') (Jev pre-check)"
 
 section repo
 cd "$repo" || exit 1

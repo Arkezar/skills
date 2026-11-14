@@ -27,7 +27,7 @@ Write each launch arg as its own TAB field in `team.tsv`.
 
 Messaging needs these extra args. Without them, every report becomes an approval dialog, or fails:
 
-- `claude`: workers add `--allowedTools` `Bash(herdr agent prompt *),Bash(herdr agent wait *)`. The lead also adds `Bash(herdr agent read *),Bash(herdr agent get *),Bash(herdr agent list)` to that same field. The auditor adds `Bash(herdr agent read *),Bash(herdr agent list),Bash(herdr notification show *)`. Keep `herdr agent send-keys` and `herdr pane` out: they can answer another agent's dialogs or run commands in other panes.
+- `claude`: workers add `--allowedTools` `Bash(herdr agent prompt *),Bash(herdr agent wait *)`. The lead puts `Bash(.herdr-team/team-send.sh *)` in place of `Bash(herdr agent prompt *)`, so its messages cannot skip the auditor. The lead also adds `Bash(herdr agent read *),Bash(herdr agent get *),Bash(herdr agent list)` to that same field. The auditor adds `Bash(herdr agent read *),Bash(herdr agent list),Bash(herdr notification show *)`. Keep `herdr agent send-keys` and `herdr pane` out: they can answer another agent's dialogs or run commands in other panes.
 - `codex`: add `-c` `sandbox_workspace_write.network_access=true`. Without it, the sandbox denies the Herdr socket (verified). This also opens network access for the sandbox, so say so in the proposal.
 
 A new worktree triggers trust dialogs in claude and codex. `launch-team.sh` waits for the human to answer them.
@@ -35,6 +35,16 @@ A new worktree triggers trust dialogs in claude and codex. `launch-team.sh` wait
 ## Other kinds
 
 Read `<bin> --help` for a model flag and a model list before you propose a model. Skills-CLI agent ids: `copilot` → `github-copilot`, `cursor` → `cursor`, `kimi` → `kimi-code-cli`, `qwen` → `qwen-code`, `droid` → `droid`, `grok` → `grok`, `kilo` → `kilo`, `devin` → `devin`, `hermes` → `hermes-agent`, `agy` → `antigravity-cli`, `amp` → `amp`, `gemini` → `gemini-cli`, `cline` → `cline`, `kiro` → `kiro-cli`, `qodercli` → `qoder`. The kinds `omp`, `mastracode`, `letta`, `maki`, and `muse` have no skills-CLI id: skip skill installs for them and tell the user.
+
+## Jev pre-check
+
+`team-send.sh` can ask TypeSafe's Jev, through OpenCode Zen, whether a TASK serves its goal, so the auditor wakes only for doubtful tasks. It needs:
+
+- `OPENCODE_API_KEY` (an OpenCode Console key) in the environment Herdr starts agents with. Discover reports it only for the current shell.
+- `curl` and `jq`.
+- `.herdr-team/jev` with the model id: `jev-1.13`, or `jev-1.13-free` while OpenCode offers it.
+
+The endpoint is `https://opencode.ai/inference/systemone/v1/systemone`. Set `JEV_URL` to use another endpoint. Each check sends the goal, up to 20 KB of its spec, and the goal's tasks to OpenCode and TypeSafe. Say so in the proposal. On pi, only the lead's sends are enforced by the rule in PROTOCOL.md, because pi has no tool allowlist.
 
 ## Autonomy flags
 

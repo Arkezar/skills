@@ -55,7 +55,7 @@ Start from the core four: lead, dev, reviewer, auditor. That is the smallest tea
 ## auditor — drift check (always, exactly 1)
 
 - Mission: keep the lead's work on the goals the human set, so the team does not dig into work that no goal needs.
-- Owns: checking each copy the lead sends (GOAL, TASK, DECIDED, CLOSED) against the goal's numbered criteria, DRIFT reports to the lead, and a notification to the human when the lead goes on drifting.
+- Owns: checking each copy that `team-send.sh` passes on (GOAL, TASK, DECIDED, CLOSED) against the goal's numbered criteria and the team log, DRIFT reports to the lead, and a notification to the human when the lead goes on drifting.
 - Done means: every copy was checked, and every drift it found was answered by a DECIDED or reported to the human.
 - Reader. It never sends work to workers. Tier: workhorse, medium effort, from a different model vendor than the lead when one is available.
 
